@@ -3,7 +3,7 @@ module learning-go-rest-api
 go 1.23.0
 
 require (
-	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	golang.org/x/crypto v0.31.0

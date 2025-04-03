@@ -2,7 +2,7 @@ package controller
 
 import (
 	"learning-go-rest-api/model"
-	"learning-go-rest-api/useCase"
+	"learning-go-rest-api/usecase"
 	"net/http"
 	"os"
 	"time"
@@ -17,10 +17,10 @@ type IUserController interface {
 }
 
 type userController struct {
-	uu useCase.IUserUseCase
+	uu usecase.IUserUseCase
 }
 
-func NewUserController(uu useCase.IUserUseCase) IUserController {
+func NewUserController(uu usecase.IUserUseCase) IUserController {
 	return &userController{uu: uu}
 }
 

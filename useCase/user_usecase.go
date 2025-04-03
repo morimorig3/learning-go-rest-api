@@ -1,4 +1,4 @@
-package useCase
+package usecase
 
 import (
 	"learning-go-rest-api/model"

@@ -14,6 +14,7 @@ type IUserController interface {
 	SignUp(c echo.Context) error
 	Login(c echo.Context) error
 	Logout(c echo.Context) error
+	CsrfToken(c echo.Context) error
 }
 
 type userController struct {
@@ -52,12 +53,12 @@ func (uc *userController) Login(c echo.Context) error {
 
 	// cookieにJWTトークンを書き込み
 	cookie := &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: time.Now().Add(24 * time.Hour),
-		Domain:  os.Getenv("API_DOMAIN"),
-		Path:    "/", // サーバー全体でcookieが有効
-		// Secure:   true, // trueにするとhttpsでのみ送信される 開発中はhttpで通信するのでfalseにする
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  time.Now().Add(24 * time.Hour),
+		Domain:   os.Getenv("API_DOMAIN"),
+		Path:     "/",                   // サーバー全体でcookieが有効
+		Secure:   true,                  // trueにするとhttpsでのみ送信される 開発中はhttpで通信するのでfalseにする
 		HttpOnly: true,                  // trueにするとJavaScriptからアクセスできなくなる
 		SameSite: http.SameSiteNoneMode, // フロント/バックエンドでドメインが異なるのでSamesiteNoneモードにしておく
 	}
@@ -69,15 +70,22 @@ func (uc *userController) Login(c echo.Context) error {
 func (uc *userController) Logout(c echo.Context) error {
 	// cookieからtokenを削除
 	cookie := &http.Cookie{
-		Name:    "token",
-		Value:   "",
-		Expires: time.Now(),
-		Domain:  os.Getenv("API_DOMAIN"),
-		Path:    "/",
-		// Secure:   true,
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Now(),
+		Domain:   os.Getenv("API_DOMAIN"),
+		Path:     "/",
+		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
 	}
 	c.SetCookie(cookie)
 	return c.NoContent(http.StatusOK)
+}
+
+func (uc *userController) CsrfToken(c echo.Context) error {
+	token := c.Get("csrf").(string)
+	return c.JSON(http.StatusOK, echo.Map{
+		"csrf_token": token,
+	})
 }

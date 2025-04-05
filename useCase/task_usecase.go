@@ -3,6 +3,7 @@ package usecase
 import (
 	"learning-go-rest-api/model"
 	"learning-go-rest-api/repository"
+	"learning-go-rest-api/validator"
 )
 
 type ITaskUseCase interface {
@@ -15,10 +16,11 @@ type ITaskUseCase interface {
 
 type taskUseCase struct {
 	tr repository.ITaskRepository
+	tv validator.ITaskValidator
 }
 
-func NewTaskUseCase(tr repository.ITaskRepository) ITaskUseCase {
-	return &taskUseCase{tr: tr}
+func NewTaskUseCase(tr repository.ITaskRepository, tv validator.ITaskValidator) ITaskUseCase {
+	return &taskUseCase{tr, tv}
 }
 
 func (tu *taskUseCase) GetAllTasks(userId uint) ([]model.TaskResponse, error) {
@@ -54,8 +56,13 @@ func (tu *taskUseCase) GetTaskById(userId uint, taskId uint) (model.TaskResponse
 }
 
 func (tu *taskUseCase) CreateTask(task model.Task) (model.TaskResponse, error) {
-	if err := tu.tr.CreateTask(&task); err != nil {
-		return model.TaskResponse{}, nil
+	err := tu.tv.TaskValidate(task)
+	if err != nil {
+		return model.TaskResponse{}, err
+	}
+	err = tu.tr.CreateTask(&task)
+	if err != nil {
+		return model.TaskResponse{}, err
 	}
 	resTask := model.TaskResponse{
 		ID:        task.ID,

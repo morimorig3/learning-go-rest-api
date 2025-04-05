@@ -6,6 +6,7 @@ import (
 	"learning-go-rest-api/repository"
 	"learning-go-rest-api/router"
 	"learning-go-rest-api/usecase"
+	"learning-go-rest-api/validator"
 )
 
 func main() {
@@ -14,8 +15,11 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	taskRepository := repository.NewTaskRepository(db)
 
-	userUseCase := usecase.NewUserUseCase(userRepository)
-	taskUseCase := usecase.NewTaskUseCase(taskRepository)
+	taskValidator := validator.NewTaskValidator()
+	userValidator := validator.NewUserValidator()
+
+	userUseCase := usecase.NewUserUseCase(userRepository, userValidator)
+	taskUseCase := usecase.NewTaskUseCase(taskRepository, taskValidator)
 
 	userController := controller.NewUserController(userUseCase)
 	taskController := controller.NewTaskController(taskUseCase)

@@ -3,6 +3,7 @@ package usecase
 import (
 	"learning-go-rest-api/model"
 	"learning-go-rest-api/repository"
+	"learning-go-rest-api/validator"
 	"os"
 	"time"
 
@@ -17,13 +18,18 @@ type IUserUseCase interface {
 
 type userUseCase struct {
 	ur repository.IUserRepository
+	uv validator.IUserValidator
 }
 
-func NewUserUseCase(ur repository.IUserRepository) IUserUseCase {
-	return &userUseCase{ur: ur}
+func NewUserUseCase(ur repository.IUserRepository, uv validator.IUserValidator) IUserUseCase {
+	return &userUseCase{ur, uv}
 }
 
 func (uu *userUseCase) SignUp(user model.User) (model.UserResponse, error) {
+	if err := uu.uv.UserValidate(user); err != nil {
+		return model.UserResponse{}, err
+	}
+
 	// 平文パスワードをハッシュ化
 	// 第二引数はハッシュ化コストでサーバーの性能と相談して決める 12~14が推奨値
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
@@ -46,6 +52,10 @@ func (uu *userUseCase) SignUp(user model.User) (model.UserResponse, error) {
 }
 
 func (uu *userUseCase) Login(user model.User) (string, error) {
+	if err := uu.uv.UserValidate(user); err != nil {
+		return "", err
+	}
+
 	storedUser := model.User{}
 	if err := uu.ur.GetUserByEmail(&storedUser, user.Email); err != nil {
 		return "", err
